@@ -35,6 +35,21 @@ async function run() {
   try {
    
     await client.connect();
+    const socialEventsDB = client.db('socialEvents');
+    const myFeature = socialEventsDB.collection('Feature');
+    const createEvents = socialEventsDB.collection('events')
+
+    app.get('/Feature', async(req, res) => {
+      const cursor = myFeature.find();
+      const result = await cursor.toArray()
+      res.send(result)
+    });
+
+    app.post('/events',async (req, res) => {
+      const newEvents = req.body;
+      const result = await createEvents.insertOne(newEvents);
+      res.send(result)
+    })
     
     await client.db('admin').command({ ping: 1 });
     console.log(
@@ -42,7 +57,7 @@ async function run() {
     );
   } finally {
    
-    await client.close();
+    
   }
 }
 run().catch(console.dir);
