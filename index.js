@@ -45,11 +45,22 @@ async function run() {
       res.send(result)
     });
 
+    app.get('/create-event', async (req, res) => {
+      const today = new Date();
+     
+     const query =({event_date:{$gt:today}})
+      const cursor = createEvents.find(query);
+      const result = await cursor.toArray()
+      res.send(result)
+    });
+
     app.post('/events',async (req, res) => {
       const newEvents = req.body;
-      const result = await createEvents.insertOne(newEvents);
+      const event_date = new Date(req.body.event_date)
+      const result = await createEvents.insertOne({ ...newEvents,event_date });
       res.send(result)
     })
+
     
     await client.db('admin').command({ ping: 1 });
     console.log(
