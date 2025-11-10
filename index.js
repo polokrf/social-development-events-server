@@ -14,7 +14,7 @@ app.use(express.json());
 // social-events
 // clMQwUIrbnfo1bNK
 
-const uri = `mongodb+srv://${process.env.Mongodb_Name}:${process.env.Mongodb_Key}@cluster0.jkj46mi.mongodb.net/?appName=Cluster0`;
+const uri = `mongodb+srv://${process.env.S3_Name}:${process.env.S3_Key}@cluster0.jkj46mi.mongodb.net/?appName=Cluster0`;
 
   const client = new MongoClient(uri, {
     serverApi: {
@@ -48,7 +48,7 @@ async function run() {
       res.send(result)
     });
 
-    app.get('/create-event', async (req, res) => {
+    app.get('/events', async (req, res) => {
       const today = new Date();
      
      const query ={event_date:{$gt:today}}
@@ -56,6 +56,13 @@ async function run() {
       const result = await cursor.toArray()
       res.send(result)
     });
+    app.get('/manage-event', async(req, res) => {
+      const email = req.query.email
+      const query = { email: email };
+      const cursor = createEvents.find(query);
+      const result = await cursor.toArray();
+      res.send(result)
+    })
     app.get('/details/:id', async (req, res) => {
       const id =req.params.id
       const query = {_id: new ObjectId(id)}
@@ -70,11 +77,45 @@ async function run() {
       res.send(result)
     })
 
-    app.post('/join', async(req, res) => {
-      const join = req.body;
-      const result = await joinEvents.insertOne(join);
+    app.put('/update-event/:id', async (req, res) => {
+      const id = req.params.id;
+      const event_date =new Date(req.body.event_date)
+      const query = { _id: new ObjectId(id) };
+      const updateData = req.body
+
+      const update = {
+        $set: { ...updateData ,event_date},
+      };
+
+      const result = await createEvents.updateOne(query, update);
       res.send(result)
 
+    })
+    
+    app.put('/delete-event/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await createEvents.deleteOne(query);
+      res.send(result)
+    })
+
+    app.get('/join-page', async(req, res) => {
+      const email = req.query.email
+      const query ={email: email}
+      const cursor = joinEvents.find(query).sort({event_date: 1})
+      const result = await cursor.toArray()
+      res.send(result)
+    })
+
+    app.post('/join', async(req, res) => {
+      const join = req.body;
+      const event_date = new Date(req.body.event_date);
+     
+      
+       const result = await joinEvents.insertOne({ ...join, event_date });
+       res.send(result);
+      
+      
     })
 
     
