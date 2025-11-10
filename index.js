@@ -11,8 +11,8 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// social-events
-// clMQwUIrbnfo1bNK
+
+
 
 const uri = `mongodb+srv://${process.env.S3_Name}:${process.env.S3_Key}@cluster0.jkj46mi.mongodb.net/?appName=Cluster0`;
 
@@ -70,12 +70,28 @@ async function run() {
       res.send(result)
     });
 
+    app.get('/event-filter', async(req, res) => {
+      const event_category = req.query.event_category;
+      const query ={event_category:event_category}
+      const cursor = createEvents.find(query);
+      const result = await cursor.toArray(cursor)
+      res.send(result)
+    })
+    app.get('/event-search', async(req, res) => {
+      const title = req.query.title;
+      const query ={title:{$regex : title, $options:'i'}}
+      const cursor = createEvents.find(query);
+      const result = await cursor.toArray(cursor)
+      res.send(result)
+    })
+
     app.post('/events',async (req, res) => {
       const newEvents = req.body;
       const event_date = new Date(req.body.event_date)
       const result = await createEvents.insertOne({ ...newEvents,event_date });
       res.send(result)
     })
+
 
     app.put('/update-event/:id', async (req, res) => {
       const id = req.params.id;
@@ -91,10 +107,10 @@ async function run() {
       res.send(result)
 
     })
-    
-    app.put('/delete-event/:id', async (req, res) => {
+
+    app.delete('/delete/:id', async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
+      const query = {_id: new ObjectId(id) };
       const result = await createEvents.deleteOne(query);
       res.send(result)
     })
