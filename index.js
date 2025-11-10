@@ -1,10 +1,18 @@
 const express = require('express');
 const cors = require('cors')
+const admin = require('firebase-admin');
+const serviceAccount = require('./social.json');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express()
 const port = process.env.PORT || 3000;
+
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
 
 // middle wear
 
@@ -12,13 +20,25 @@ app.use(cors());
 app.use(express.json());
 
 
-const verifyToken = (req, res, next) => {
+const verifyToken =async (req, res, next) => {
   const authorization = req.headers.authorization;
 
   if (!authorization) {
    return  res.status(401).send({message:'unauthorized access'})
   }
-  next()
+
+  const token = authorization.split(' ')[1];
+
+  try {
+    const decoded =await admin.auth().verifyIdToken(token);
+    
+    req.token_email = decoded.email;
+    
+     next();
+  } catch  {
+     return res.status(401).send({ message: 'unauthorized access' });
+  }
+ 
 }
 
 const uri = `mongodb+srv://${process.env.S3_Name}:${process.env.S3_Key}@cluster0.jkj46mi.mongodb.net/?appName=Cluster0`;
@@ -64,9 +84,14 @@ async function run() {
       res.send(result)
     });
     app.get('/manage-event', verifyToken, async (req, res) => {
-      
       const email = req.query.email
-      const query = { email: email };
+      const query = {}
+      if (email) {
+        if (!email === req.token_email) {
+          return res.status(403).send({ message: 'not access' });
+        } query.email = email;
+      }
+     
       const cursor = createEvents.find(query);
       const result = await cursor.toArray();
       res.send(result)
@@ -125,7 +150,13 @@ async function run() {
 
     app.get('/join-page',verifyToken, async(req, res) => {
       const email = req.query.email
-      const query ={email: email}
+      const query = {}
+      if (email) {
+        if (!email === req.token_email) {
+          return res.status(403).send({ message: 'not access' })
+        }
+        query.email = email;
+      }
       const cursor = joinEvents.find(query).sort({event_date: 1})
       const result = await cursor.toArray()
       res.send(result)
