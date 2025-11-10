@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors')
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express()
 const port = process.env.PORT || 3000;
@@ -38,8 +38,11 @@ async function run() {
     const socialEventsDB = client.db('socialEvents');
     const myFeature = socialEventsDB.collection('Feature');
     const createEvents = socialEventsDB.collection('events')
+    const joinEvents = socialEventsDB.collection('join')
 
-    app.get('/Feature', async(req, res) => {
+
+
+    app.get('/feature', async(req, res) => {
       const cursor = myFeature.find();
       const result = await cursor.toArray()
       res.send(result)
@@ -48,9 +51,15 @@ async function run() {
     app.get('/create-event', async (req, res) => {
       const today = new Date();
      
-     const query =({event_date:{$gt:today}})
+     const query ={event_date:{$gt:today}}
       const cursor = createEvents.find(query);
       const result = await cursor.toArray()
+      res.send(result)
+    });
+    app.get('/details/:id', async (req, res) => {
+      const id =req.params.id
+      const query = {_id: new ObjectId(id)}
+      const result = await createEvents.findOne(query);
       res.send(result)
     });
 
@@ -59,6 +68,13 @@ async function run() {
       const event_date = new Date(req.body.event_date)
       const result = await createEvents.insertOne({ ...newEvents,event_date });
       res.send(result)
+    })
+
+    app.post('/join', async(req, res) => {
+      const join = req.body;
+      const result = await joinEvents.insertOne(join);
+      res.send(result)
+
     })
 
     
