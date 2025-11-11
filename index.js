@@ -158,23 +158,12 @@ async function run() {
 
     app.post('/join',verifyToken, async(req, res) => {
       const join = req.body;
-      const title = req.body.title;
       const event_date = new Date(req.body.event_date);
-      const query = { title: title };
-      const findTitle = await joinEvents.findOne(query);
-      if (findTitle) {
-       return res.send({message: 'Already join this events'})
-      }else {
-       const result = await joinEvents.insertOne({ ...join, event_date });
-       res.send(result);
-       
-      }
-      
-     
-      
+      const result = await joinEvents.insertOne({ ...join, event_date });
+      res.send(result);
        
       
-    })
+  })
 
     app.delete('/delete-join/:id',verifyToken, async(req, res) => {
       const id = req.params.id;
