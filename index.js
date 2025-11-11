@@ -61,20 +61,14 @@ app.get('/', (req, res) => {
 async function run() {
   try {
    
-    await client.connect();
+    // await client.connect();
     const socialEventsDB = client.db('socialEvents');
-    const myFeature = socialEventsDB.collection('Feature');
     const createEvents = socialEventsDB.collection('events')
     const joinEvents = socialEventsDB.collection('join')
 
 
 
-    app.get('/feature', async(req, res) => {
-      const cursor = myFeature.find();
-      const result = await cursor.toArray()
-      res.send(result)
-    });
-
+   
     app.get('/events-upcoming', async (req, res) => {
       const today = new Date();
      
@@ -164,20 +158,29 @@ async function run() {
 
     app.post('/join',verifyToken, async(req, res) => {
       const join = req.body;
+      const title = req.body.title;
       const event_date = new Date(req.body.event_date);
-     
-      
+      const query = { title: title };
+      const findTitle = await joinEvents.findOne(query);
+      if (findTitle) {
+       return res.send({message: 'Already join this events'})
+      }else {
        const result = await joinEvents.insertOne({ ...join, event_date });
        res.send(result);
+       
+      }
       
+     
+      
+       
       
     })
 
     
-    await client.db('admin').command({ ping: 1 });
-    console.log(
-      'Pinged your deployment. You successfully connected to MongoDB!'
-    );
+    // await client.db('admin').command({ ping: 1 });
+    // console.log(
+    //   'Pinged your deployment. You successfully connected to MongoDB!'
+    // );
   } finally {
    
     
