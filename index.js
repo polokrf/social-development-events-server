@@ -73,7 +73,7 @@ async function run() {
       const today = new Date();
      
      const query ={event_date:{$gt:today}}
-      const cursor = createEvents.find(query);
+      const cursor = createEvents.find(query).sort({event_date:1});
       const result = await cursor.toArray()
       res.send(result)
     });
