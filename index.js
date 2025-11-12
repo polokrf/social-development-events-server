@@ -83,10 +83,11 @@ async function run() {
       if (email) {
         if (!email === req.token_email) {
           return res.status(403).send({ message: 'not access' });
-        } query.email = email;
+        }
+        query.email = email;
       }
      
-      const cursor = createEvents.find(query);
+      const cursor = createEvents.find(query).sort({event_date:1});
       const result = await cursor.toArray();
       res.send(result)
     })
