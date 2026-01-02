@@ -64,10 +64,26 @@ async function run() {
     // await client.connect();
     const socialEventsDB = client.db('socialEvents');
     const createEvents = socialEventsDB.collection('events')
-    const joinEvents = socialEventsDB.collection('join')
+    const joinEvents = socialEventsDB.collection('join');
+    const usersData = socialEventsDB.collection('users')
 
 
 
+    // set users in register
+
+    app.post('/user-data', async (req, res) => {
+     const usersBody = req.body
+       const email = req.body.email;
+      const query = { email: email };
+      const user = await usersData.findOne(query);
+
+      if (user) {
+        return res.send({message: 'Already register'})
+      };
+
+      const result = await usersData.insertOne(usersBody);
+      res.send(result)
+    })
   
     // upcoming events 
     app.get('/events-upcoming', async (req, res) => {
@@ -113,20 +129,8 @@ async function run() {
       res.send(result)
     });
 
-    app.get('/event-filter', async(req, res) => {
-      const event_category = req.query.event_category;
-      const query ={event_category:event_category}
-      const cursor = createEvents.find(query);
-      const result = await cursor.toArray(cursor)
-      res.send(result)
-    })
-    app.get('/event-search', async(req, res) => {
-      const title = req.query.title;
-      const query ={title:{$regex : title, $options:'i'}}
-      const cursor = createEvents.find(query);
-      const result = await cursor.toArray(cursor)
-      res.send(result)
-    })
+   
+    
 
     app.post('/events',verifyToken,async (req, res) => {
       const newEvents = req.body;
