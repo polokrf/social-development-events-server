@@ -68,15 +68,30 @@ async function run() {
 
 
 
-   
+  
+    // upcoming events 
     app.get('/events-upcoming', async (req, res) => {
       const today = new Date();
+
+      const search = req.query.search;
+      const filter = req.query.category;
      
-     const query ={event_date:{$gt:today}}
+      const query = { event_date: { $gt: today } };
+
+      if (search) {
+        query.title = search;
+
+      };
+      if (filter) {
+        query.event_category = filter;
+      }
+
       const cursor = createEvents.find(query).sort({event_date:1});
       const result = await cursor.toArray()
       res.send(result)
     });
+
+    // manage own events 
     app.get('/manage-event', verifyToken, async (req, res) => {
       const email = req.query.email
       const query = {}
