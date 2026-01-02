@@ -79,7 +79,7 @@ async function run() {
       const query = { event_date: { $gt: today } };
 
       if (search) {
-        query.title = search;
+        query.title = { $regex: search, $options: 'i' };
 
       };
       if (filter) {
