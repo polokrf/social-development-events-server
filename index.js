@@ -91,6 +91,7 @@ async function run() {
 
       const search = req.query.search;
       const filter = req.query.category;
+       const { limit, skip } = req.query;
      
       const query = { event_date: { $gt: today } };
 
@@ -102,14 +103,16 @@ async function run() {
         query.event_category = filter;
       }
 
-      const cursor = createEvents.find(query).sort({event_date:1});
+      const cursor = createEvents.find(query).sort({ event_date: 1 }).limit(Number(limit)).skip(Number(skip));
+      const  count = await createEvents.countDocuments(query)
       const result = await cursor.toArray()
-      res.send(result)
+      res.send({result,count})
     });
 
     // manage own events 
     app.get('/manage-event', verifyToken, async (req, res) => {
       const email = req.query.email
+      const { limit, skip } = req.query;
       const query = {}
       if (email) {
         if (!email === req.token_email) {
@@ -118,9 +121,10 @@ async function run() {
         query.email = email;
       }
      
-      const cursor = createEvents.find(query).sort({event_date:1});
+      const cursor = createEvents.find(query).sort({ event_date: 1 }).limit(Number(limit)).skip(Number(skip));
+      const count = await createEvents.countDocuments(query);
       const result = await cursor.toArray();
-      res.send(result)
+      res.send({result,count})
     })
     app.get('/details/:id', async (req, res) => {
       const id =req.params.id
@@ -163,7 +167,8 @@ async function run() {
     })
 
     app.get('/join-page',verifyToken, async(req, res) => {
-      const email = req.query.email
+      const email = req.query.email;
+      const { limit, skip } = req.query;
       const query = {}
       if (email) {
         if (!email === req.token_email) {
@@ -171,9 +176,10 @@ async function run() {
         }
         query.email = email;
       }
-      const cursor = joinEvents.find(query).sort({event_date: 1})
+      const cursor = joinEvents.find(query).sort({ event_date: 1 }).limit(Number(limit)).skip(Number(skip));
+      const count = await joinEvents.countDocuments(query)
       const result = await cursor.toArray()
-      res.send(result)
+      res.send({ result ,count});
     })
 
     app.post('/join',verifyToken, async(req, res) => {
@@ -199,7 +205,7 @@ async function run() {
       const totalUsers = await usersData.countDocuments();
       const totalEvents = await createEvents.countDocuments();
       const totalJoined = await joinEvents.countDocuments();
-      res.send({totalEvents,totalJoined,totalUsers})
+      res.send([{ totalEvents, totalJoined, totalUsers }]);
     })
 
     
