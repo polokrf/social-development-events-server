@@ -193,6 +193,15 @@ async function run() {
 
     })
 
+    // total count overview
+
+    app.get('/over-view', async (req, res) => {
+      const totalUsers = await usersData.countDocuments();
+      const totalEvents = await createEvents.countDocuments();
+      const totalJoined = await joinEvents.countDocuments();
+      res.send({totalEvents,totalJoined,totalUsers})
+    })
+
     
     // await client.db('admin').command({ ping: 1 });
     // console.log(
