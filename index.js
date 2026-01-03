@@ -168,7 +168,11 @@ async function run() {
 
     app.get('/join-page',verifyToken, async(req, res) => {
       const email = req.query.email;
-      const { limit, skip } = req.query;
+      const { limit, skip, sort = 'event_date', order  } = req.query;
+      const sortApps = {};
+      if (order) {
+        sortApps.sort = order === 'asc' ? 1 : -1;
+      }
       const query = {}
       if (email) {
         if (!email === req.token_email) {
@@ -176,7 +180,7 @@ async function run() {
         }
         query.email = email;
       }
-      const cursor = joinEvents.find(query).sort({ event_date: 1 }).limit(Number(limit)).skip(Number(skip));
+      const cursor = joinEvents.find(query).sort(sortApps).limit(Number(limit)).skip(Number(skip));
       const count = await joinEvents.countDocuments(query)
       const result = await cursor.toArray()
       res.send({ result ,count});
