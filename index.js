@@ -171,7 +171,7 @@ async function run() {
       const { limit, skip, sort = 'event_date', order  } = req.query;
       const sortApps = {};
       if (order) {
-        sortApps.sort = order === 'asc' ? 1 : -1;
+        sortApps[sort || 'event_date'] = order === 'asc' ? 1 : -1;
       }
       const query = {}
       if (email) {
