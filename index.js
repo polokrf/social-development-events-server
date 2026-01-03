@@ -79,10 +79,12 @@ async function run() {
 
       if (user) {
         return res.send({message: 'Already register'})
-      };
+      } else {
+        const result = await usersData.insertOne(usersBody);
+        res.send(result);
+      }
 
-      const result = await usersData.insertOne(usersBody);
-      res.send(result)
+      
     })
   
     // upcoming events 
