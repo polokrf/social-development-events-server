@@ -73,7 +73,7 @@ async function run() {
 
     app.post('/user-data', async (req, res) => {
      const usersBody = req.body
-       const email = req.body.email;
+       const email = usersBody.email;
       const query = { email: email };
       const user = await usersData.findOne(query);
 
